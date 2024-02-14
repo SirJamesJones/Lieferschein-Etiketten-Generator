@@ -21,3 +21,6 @@ Requirements
 
 - HTML delivery notes Template (A4)
 - HTML labels Template [100x100]
+
+TODO
+- generalise format data function
