@@ -2,89 +2,113 @@ import { parse } from "@vanillaes/csv"
 import canvas2pdf from 'canvas2pdf';
 import blobStream from "blob-stream";
 
-const csv = `BestellNr., Menge, Firma, Adresse
-1, 70, Demo GmbH, doffmannshausen,
-2, 60, Demo AG, ...
-`;
-let parsed: Array<string[]> = parse(csv)
-let [headers, ...entries] = parsed
-console.log(headers, entries)
+// TODO fill fields for deliverynote
+const EntryKeys = ["Bestellnummer", "Adresse", "Firma", "Menge"] as const
 
-function generate_options_for_headers(headers: Array<string>) {
-  return headers.map((header, idx) => `<option value="${idx}">${header}</option>`).join('\n')
-}
-const uploadFile = document.querySelector<HTMLInputElement>("#upload")
-let headerOptions = generate_options_for_headers(headers)
-uploadFile.addEventListener("change", (event) => {
-  const uploadElem = event.target as HTMLInputElement
-  console.dir(uploadElem.files[0]);
+type EntryKeyUnion = typeof EntryKeys[number]
 
-}
-)
-const bestellNrElem = document.getElementById("Bestellnummer")
+type Entry = { [Key in (EntryKeyUnion)]: string }
+
+type HeaderAssignments = { [Key in (EntryKeyUnion)]: number }
+
 const previewElem = document.querySelector<HTMLCanvasElement>("#preview")
-const pdfPreviewElem = document.getElementById("pdfPreview")
-bestellNrElem.innerHTML = headerOptions
-
-function render_deliverynote(ctx, delivery_data, x, y) {
-  console.log(delivery_data)
-  ctx.reset?.()
-  ctx.font = "10px Helvetica"
-  // x and y for fillText are in the bottom left corner of the text
-  ctx.fillText(`Bestellnummer: ${delivery_data.bestellNr}`, x, y + 15);
-}
-
-class Datensatz {
-  bestellnummer: number;
-  kunde: string;
-  adresse: string;
-  constructor(bestellnummer: number,
-    kunde: string,
-    adresse: string) {
-    this.bestellnummer = bestellnummer
-  }
-}
-
-function get_header_assignments() {
-  return {
-    bestellNr: bestellNrElem.value,
-  }
-}
-
-function format_data(csv_entries, header_assignments) {
-  return csv_entries.map(entry => (
-    new Datensatz(
-      entry[header_assignments.bestellNr],
-      entry[header_assignments.kunde],
-      "",
-    )
-  ))
-}
-
-function render_page(context, data) {
-  for (const [index, delivery_data_entry] of data.entries()) {
-    render_deliverynote(context, delivery_data_entry, 100 * (index % 2), 20 * (index - (index % 2)))
-  }
-}
 const context = previewElem.getContext('2d')
-const data = format_data(entries, get_header_assignments())
+const pdfPreviewElem = document.querySelector<HTMLIFrameElement>("#pdfPreview")
+const form = document.querySelector("form")
+const uploadFile = document.querySelector<HTMLInputElement>("#upload")
+const renderPDFButton = document.querySelector("button")
 
-bestellNrElem.addEventListener("change", (ev) => {
+let entries: string[][]
+
+async function handleCSVupload(event) {
+  const uploadElem = event.target as HTMLInputElement
+  const file = uploadElem.files[0]
+  const csvtext = await file.text()
+  const parsed: Array<string[]> = parse(csvtext)
+  const headers = parsed[0]
+  entries = parsed.slice(1)
+  
+  const headerOptions = headers.map((header, idx) => `<option value="${idx}">${header}</option>`).join('\n')
+  
+  const formHtml = EntryKeys.map((header) => `
+  <div>
+  <label for="${header}">${header}</label>
+  <select name="${header}" id="${header}">
+  ${headerOptions}
+  </select>
+  </div>
+  `).join('\n')
+  form.innerHTML = formHtml
+  
+  const selectElems = form.querySelectorAll("select")
+
+  selectElems.forEach(elem => elem.addEventListener("change", handleHeaderAssignmentChange))
+  
+  const data = format_data(entries, get_header_assignments())
+  
+  render_deliverynote(context, data[0], 0, 0)
+}
+
+uploadFile.addEventListener("change", handleCSVupload)
+renderPDFButton.addEventListener("click", renderPDF)
+
+function handleHeaderAssignmentChange(ev) {
   const newData = format_data(entries, get_header_assignments())
   render_deliverynote(context, newData[0], 0, 0)
-})
+}
 
 
-render_deliverynote(context, data[0], 0, 0)
-
-const renderPDFButton = document.querySelector("button")
-renderPDFButton.addEventListener("click", () => {
-  const newData = format_data(entries, get_header_assignments())
+function renderPDF() {
+  const newData = format_data(entries, get_header_assignments());
   let stream = blobStream();
   let ctx = new canvas2pdf.PdfContext(stream);
   ctx.stream.on('finish', () => {
     pdfPreviewElem.src = ctx.stream.toBlobURL('application/pdf');
   });
-  render_page(ctx, newData)
-  ctx.end()
-})
+  render_page(ctx, newData);
+  ctx.end();
+};
+
+function format_data(csv_entries: string[][], header_assignments: Partial<HeaderAssignments>): Entry[] {
+  return csv_entries.map((entry) => {
+    const formattedEntry: Entry = {} as Entry;
+    for (const key in header_assignments) {  
+      if (header_assignments.hasOwnProperty(key)) {
+        //entry = row of CSV data. [header_assignments[key]] = column index
+        //entry[header_assignments[key]] = retrive value from corrosponding column in CSV data
+        //assign retrived value to key in formattedEntry object
+        formattedEntry[key] = entry[header_assignments[key]]; 
+      }                                                       
+    }                                                        
+    return formattedEntry; //return formatted data for row
+  });
+}
+
+function render_page(context: any, data: any[]) {
+  for (const [index, delivery_data_entry] of data.entries()) {
+    render_deliverynote(context, delivery_data_entry, 100 * (index % 2), 20 * (index - (index % 2)))
+  }
+}
+
+function render_deliverynote(ctx: CanvasRenderingContext2D, delivery_data: Entry, x: number, y: number) {
+  ctx.reset?.();
+  ctx.font = "10px Helvetica";
+  ctx.fillStyle = "#FF0000";
+  // iterate over each key in delivery_data obj. check if delivery_data properties are defined,
+  // render prop name(ie. BEstellnummer) followed by corrosponding value from deliver_data
+  for (const prop in delivery_data) {
+    if (delivery_data.hasOwnProperty(prop)) {
+      ctx.fillText(`${prop}: ${delivery_data[prop]}`, x, y + 15); //same as: ctx.fillText(`Bestellnummer: ${delivery_data.Bestellnummer}`, x, y + 15);
+      y += 30;
+    }
+  }
+}
+
+function get_header_assignments() {
+  const headerassignments: Partial<HeaderAssignments> = {} 
+  const selectElems = form.querySelectorAll("select")
+  selectElems.forEach(selectelem => {
+    headerassignments[selectelem.id] = +selectelem.value
+  })
+  return headerassignments
+}

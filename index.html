@@ -18,17 +18,6 @@
       <iframe style="border:1px solid black; display: block;" width="600" height="775" id="pdfPreview"></iframe>
     </div>
   </div>
-  <script>
-    const myHeader = ["Bestellnummer", "a", "b"]
-    const formHtml = myHeader.map((header) => `
-    <div>
-        <label for="${header}">${header}</label>
-        <select name="${header}" id="${header}"></select>
-    </div>
-    `).join('\n')
-    const form = document.querySelector("form")
-    form.innerHTML = formHtml
-  </script>
   <script src="node_modules/canvas2pdf/lib/pdfkit.js"></script>
   <script type="module" src="/src/main.ts"></script>
 </body>
