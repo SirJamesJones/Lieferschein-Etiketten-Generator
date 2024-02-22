@@ -1,8 +1,8 @@
 import { parse } from "@vanillaes/csv"
 import canvas2pdf from 'canvas2pdf';
 import blobStream from "blob-stream";
-
-// TODO fill fields for deliverynote
+// TODO
+// fill fields for deliverynote
 const EntryKeys = ["Bestellnummer", "Adresse", "Firma", "Menge"] as const
 
 type EntryKeyUnion = typeof EntryKeys[number]
@@ -16,7 +16,9 @@ const context = previewElem.getContext('2d')
 const pdfPreviewElem = document.querySelector<HTMLIFrameElement>("#pdfPreview")
 const form = document.querySelector("form")
 const uploadFile = document.querySelector<HTMLInputElement>("#upload")
-const renderPDFButton = document.querySelector("button")
+const renderPDFButton = document.querySelector("#renderPDF") as HTMLButtonElement;
+const inputElement = document.querySelector("#contact") as HTMLInputElement;
+const addButton = document.querySelector("#send") as HTMLButtonElement;
 
 let entries: string[][]
 
@@ -29,7 +31,7 @@ async function handleCSVupload(event) {
   entries = parsed.slice(1)
   
   const headerOptions = headers.map((header, idx) => `<option value="${idx}">${header}</option>`).join('\n')
-  
+
   const formHtml = EntryKeys.map((header) => `
   <div>
   <label for="${header}">${header}</label>
@@ -57,7 +59,6 @@ function handleHeaderAssignmentChange(ev) {
   render_deliverynote(context, newData[0], 0, 0)
 }
 
-
 function renderPDF() {
   const newData = format_data(entries, get_header_assignments());
   let stream = blobStream();
@@ -74,13 +75,13 @@ function format_data(csv_entries: string[][], header_assignments: Partial<Header
     const formattedEntry: Entry = {} as Entry;
     for (const key in header_assignments) {  
       if (header_assignments.hasOwnProperty(key)) {
-        //entry = row of CSV data. [header_assignments[key]] = column index
+        //entry = row of CSV data | [header_assignments[key]] = column index
         //entry[header_assignments[key]] = retrive value from corrosponding column in CSV data
         //assign retrived value to key in formattedEntry object
         formattedEntry[key] = entry[header_assignments[key]]; 
       }                                                       
     }                                                        
-    return formattedEntry; //return formatted data for row
+    return formattedEntry;
   });
 }
 
@@ -95,13 +96,15 @@ function render_deliverynote(ctx: CanvasRenderingContext2D, delivery_data: Entry
   ctx.font = "10px Helvetica";
   ctx.fillStyle = "#FF0000";
   // iterate over each key in delivery_data obj. check if delivery_data properties are defined,
-  // render prop name(ie. BEstellnummer) followed by corrosponding value from deliver_data
+  // render prop name(ie. Bestellnummer) followed by corrosponding value from deliver_data
   for (const prop in delivery_data) {
     if (delivery_data.hasOwnProperty(prop)) {
       ctx.fillText(`${prop}: ${delivery_data[prop]}`, x, y + 15); //same as: ctx.fillText(`Bestellnummer: ${delivery_data.Bestellnummer}`, x, y + 15);
       y += 30;
     }
   }
+  //for contact render in preview
+  ctx.fillText(`Ansprechpartner: ${InputValue}`, x , y + 15);
 }
 
 function get_header_assignments() {
@@ -112,3 +115,20 @@ function get_header_assignments() {
   })
   return headerassignments
 }
+
+// Bad Code Area :^)
+// not sure how to make this update dynamic, changes in pdf, not in preview
+
+inputElement?.addEventListener("keydown", (ev) => {
+  if(ev.key == "Enter"){
+    addButton?.click();
+  }
+})
+
+let InputValue:string;
+
+addButton?.addEventListener("click", () => {
+  InputValue = inputElement.value.trim();
+  console.log(InputValue);
+  inputElement.value = "";
+})
