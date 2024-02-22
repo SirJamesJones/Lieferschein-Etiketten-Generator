@@ -23,4 +23,9 @@ Requirements
 - HTML labels Template [100x100]
 
 TODO
-- generalise format data function
+- add packaging amounts of products / add max packaging per box for products 
+    - calculate amount of boxes needed, off the amount of ordered products
+    - consider despatch bags 
+- add prices + calculation
+- fill fields (header) for deliverynote
+- create deliverynote + labels Templates (maybe not sure yet)
