@@ -18,7 +18,7 @@ const form = document.querySelector("form")
 const uploadFile = document.querySelector<HTMLInputElement>("#upload")
 const renderPDFButton = document.querySelector("#renderPDF") as HTMLButtonElement;
 const inputElement = document.querySelector("#contact") as HTMLInputElement;
-const addButton = document.querySelector("#send") as HTMLButtonElement;
+const contactButton = document.querySelector("#send") as HTMLButtonElement;
 
 let entries: string[][]
 
@@ -121,13 +121,13 @@ function get_header_assignments() {
 
 inputElement?.addEventListener("keydown", (ev) => {
   if(ev.key == "Enter"){
-    addButton?.click();
+    contactButton?.click();
   }
 })
 
 let InputValue:string;
 
-addButton?.addEventListener("click", () => {
+contactButton?.addEventListener("click", () => {
   InputValue = inputElement.value.trim();
   console.log(InputValue);
   inputElement.value = "";
