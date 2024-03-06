@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<head>
+    <style>
+        p {
+            margin: 0px;
+            font-size: 0.98em;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .cell {
+            width: 95mm;
+            height: 95mm;
+            position: relative;
+            padding-top: 4mm;
+        }
+
+        .content {
+            float: left;
+            padding-top: 4mm;
+            padding-left: 4mm;
+            padding-right: 4mm;
+        }
+
+        .order-info {
+            width: 49%;
+            float: left;
+        }
+b
+        .order-details {
+            width: 51%;
+        }
+
+        .line {
+            margin: 1px;
+        }
+    </style>
+</head>
+<body>
+<div class="main">
+    <div class="cell">
+        <div class="content">
+            <div class="line">
+                <div class="order-info">
+                    <p class="bold">Bestellnummer:</p>
+                </div>
+                <div class="order-details">
+                    <p>{{Bestellnummer}}</p>
+                </div>
+            </div>
+            <div class="line">
+                <div class="order-info">
+                    <p class="bold">Besteller:</p>
+                </div>
+                <div class="order-details">
+                    <p>{{Besteller}}</p>
+                </div>
+            </div>
+            <div class="line">
+                <div class="order-info">
+                    <p class="bold">Firma:</p>
+                </div>
+                <div class="order-details">
+                    <p>{{Firma}}</p>
+                </div>
+            </div>
+            <div class="line">
+                <div class="order-info">
+                    <p class="bold">Produkt:</p>
+                </div>
+                <div class="order-details">
+                    <p>{{Produkt}}</p>
+                </div>
+            </div>
+            <div class="line">
+                <div class="order-info">
+                <p class="bold">lfd. Nr.:</p>
+                </div>
+                <div class="order-details">
+                    <p>{{lfdNr}}</p>
+                </div>
+            </div>
+            <div class="line">
+                <div class="order-info">
+                    <p class="bold">Stückzahl im Karton:</p>
+                </div>
+                <div class="order-details">
+                    <p>{{Verpackungseinheit}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
