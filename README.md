@@ -23,9 +23,7 @@ Requirements
 - HTML labels Template [100x100]
 
 TODO
-- add packaging amounts of products / add max packaging per box for products 
-    - calculate amount of boxes needed, off the amount of ordered products
-    - consider despatch bags 
-- add prices + calculation
-- fill fields (header) for deliverynote
+- consider despatch bags 
 - create deliverynote + labels Templates (maybe not sure yet)
+- preview for labels
+- Split count for label PDFs + PDF Merge for one big PDF 
