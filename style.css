@@ -1,0 +1,6 @@
+iframe {
+    border:1px solid black;
+    display: block;
+    width: 600px;
+    height: 775px; 
+}
