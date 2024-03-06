@@ -3,7 +3,7 @@ import canvas2pdf from 'canvas2pdf';
 import blobStream from "blob-stream";
 // TODO
 // fill fields for deliverynote
-const EntryKeys = ["Bestellnummer", "Adresse", "Firma", "Menge"] as const
+const EntryKeys = ["Bestellnummer","Firma", "Menge", "Vorname", "Nachname", "Straße", "PLZ", "Stadt", "Land" ] as const
 
 type EntryKeyUnion = typeof EntryKeys[number]
 
@@ -17,8 +17,6 @@ const pdfPreviewElem = document.querySelector<HTMLIFrameElement>("#pdfPreview")
 const form = document.querySelector("form")
 const uploadFile = document.querySelector<HTMLInputElement>("#upload")
 const renderPDFButton = document.querySelector("#renderPDF") as HTMLButtonElement;
-const inputElement = document.querySelector("#contact") as HTMLInputElement;
-const contactButton = document.querySelector("#send") as HTMLButtonElement;
 
 let entries: string[][]
 
@@ -97,14 +95,16 @@ function render_deliverynote(ctx: CanvasRenderingContext2D, delivery_data: Entry
   ctx.fillStyle = "#FF0000";
   // iterate over each key in delivery_data obj. check if delivery_data properties are defined,
   // render prop name(ie. Bestellnummer) followed by corrosponding value from deliver_data
-  for (const prop in delivery_data) {
-    if (delivery_data.hasOwnProperty(prop)) {
-      ctx.fillText(`${prop}: ${delivery_data[prop]}`, x, y + 15); //same as: ctx.fillText(`Bestellnummer: ${delivery_data.Bestellnummer}`, x, y + 15);
+  for (const data in delivery_data) {
+    if (delivery_data.hasOwnProperty(data)) {
+      ctx.fillText(`${data}: ${delivery_data[data]}`, x, y + 15); //same as: ctx.fillText(`Bestellnummer: ${delivery_data.Bestellnummer}`, x, y + 15);
       y += 30;
     }
   }
   //for contact render in preview
-  ctx.fillText(`Ansprechpartner: ${InputValue}`, x , y + 15);
+  ctx.fillText(`Ansprechpartner: ${contact}`, x , y + 15);
+  ctx.fillText(`Ansprechpartner Tel.: ${contactnr}`, x , y + 30);
+  ctx.fillText(`Ansprechpartner E-Mail: ${contactmail}`, x , y + 45);
 }
 
 function get_header_assignments() {
@@ -117,18 +117,85 @@ function get_header_assignments() {
 }
 
 // Bad Code Area :^)
-// not sure how to make this update dynamic, changes in pdf, not in preview
 
-inputElement?.addEventListener("keydown", (ev) => {
+const contactNumber = document.querySelector("#contactnumber") as HTMLInputElement;
+const contactName = document.querySelector("#contact") as HTMLInputElement;
+const contactMail = document.querySelector("#contactmail") as HTMLInputElement;
+const contactButton = document.querySelector("#send") as HTMLButtonElement;
+
+contactName?.addEventListener("keydown", (ev) => {
   if(ev.key == "Enter"){
     contactButton?.click();
   }
 })
 
-let InputValue:string;
+contactNumber?.addEventListener("keydown", (ev) => {
+  if(ev.key == "Enter"){
+    contactButton?.click();
+  }
+})
+
+contactMail?.addEventListener("keydown", (ev) => {
+  if(ev.key == "Enter"){
+    contactButton?.click();
+  }
+})
+
+
+// not sure how to make this update dynamic, changes in pdf, not in preview
+let contact:string;
+let contactnr:string;
+let contactmail:string;
 
 contactButton?.addEventListener("click", () => {
-  InputValue = inputElement.value.trim();
-  console.log(InputValue);
-  inputElement.value = "";
+  contact = contactName.value.trim();
+  contactnr = contactNumber.value.trim();
+  contactmail = contactMail.value.trim();
+  contactName.value = "";
+  contactNumber.value = "";
+  contactMail.value = "";
 })
+
+//Packaging (packagingmax)
+//'3-Month Desk Calendar' => 560,
+//'4-Month Wall Calendar' => 50,
+//'Desktop Calendar' => 30,
+//'Meeting Calendar' => 18,
+//'Week Calendar Small' => 14,
+//'Notebook' => 26,
+//'Wall Project Planner' => 1,
+//'3-Month Desk Calendar + bags' => 560,
+//'4-Month Wall Calendar + bags' => 50,
+//'Desktop Calendar + bags' => 18,
+//'Meeting Calendar + bags' => 18,
+//'Week Calendar Small + bags' => 14,
+//'Notebook + bags' => 26,
+//'Wall Project Planner + bags' => 1
+
+//    calculate how many packages are needed and what the rest in the last package will be.
+//    this also calculates how many labels have to be printed for the specific order
+
+// i = orderamount / packagingmax
+// while (i >= 1) {
+//  productsinp = packagingmax
+//        in the last iteration we calculate how many products fit in the last package
+//  if (i == 1){
+//    productsinp = orderamount % packagingmax
+//    if (packageamount == 0) {
+//    productsinp = packagingmax
+//    }
+//  i--
+//  }
+//     add a split counter so we generate only a certain number of labels in one PDF
+//
+//  split++
+//  if (split == 32){
+//    generate PDF
+//  }
+//}
+//
+//    handle the rest of the split counter after all the iterations have finished and the counter hasent reached 32
+//    
+//if (split != 0){
+//  genrate PDF with rest amount of split
+//}
