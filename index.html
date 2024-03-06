@@ -5,20 +5,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vite App</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
   <input type="file" accept=".csv" id="upload"/>
   <label for="contact">Ansprechpartner</label>
   <input type="text" id="contact"/>
+  <label for="contactnumber">Ansprechpartner Tel.</label>
+  <input type="text" id="contactnumber"/>
+  <label for="contactemail">Ansprechpartner E-Mail</label>
+  <input type="email" id="contactmail"/>
   <button id="send">OK</button>
   <div>
+    <h2>Bitte Lieferdetails zuweisen</h2>
     <form action="#" style="display: flex;">
     </form>
     <canvas width="200" height="200" id="preview"></canvas>
-    <div>
-      <button id="renderPDF" style="display: block;">Render PDF</button>
-      <iframe style="border:1px solid black; display: block;" width="600" height="775" id="pdfPreview"></iframe>
+    <div id="container">
+      <div class="iframe-container">
+        <button id="renderPDF" style="display: block;">Render PDF</button>
+        <iframe class="iframe" id="pdfPreview"></iframe>
+      </div>
     </div>
   </div>
   <script src="node_modules/canvas2pdf/lib/pdfkit.js"></script>
