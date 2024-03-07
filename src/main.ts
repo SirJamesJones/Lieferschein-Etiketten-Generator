@@ -1,8 +1,7 @@
 import { parse } from "@vanillaes/csv"
 import canvas2pdf from 'canvas2pdf';
 import blobStream from "blob-stream";
-// TODO
-// fill fields for deliverynote
+
 const EntryKeys = ["Bestellnummer","Firma", "Menge", "Vorname", "Nachname", "Straße", "PLZ", "Stadt", "Land" ] as const
 
 type EntryKeyUnion = typeof EntryKeys[number]
@@ -101,10 +100,10 @@ function render_deliverynote(ctx: CanvasRenderingContext2D, delivery_data: Entry
       y += 30;
     }
   }
-  //for contact render in preview
-  ctx.fillText(`Ansprechpartner: ${contact}`, x , y + 15);
-  ctx.fillText(`Ansprechpartner Tel.: ${contactnr}`, x , y + 30);
-  ctx.fillText(`Ansprechpartner E-Mail: ${contactmail}`, x , y + 45);
+  //for contact input fields render in frontend
+  ctx.fillText(`Ansprechpartner: ${contactvalues[0]}`, x , y + 15);
+  ctx.fillText(`Ansprechpartner Tel.: ${contactvalues[1]}`, x , y + 30);
+  ctx.fillText(`Ansprechpartner E-Mail: ${contactvalues[2]}`, x , y + 45);
 }
 
 function get_header_assignments() {
@@ -118,43 +117,29 @@ function get_header_assignments() {
 
 // Bad Code Area :^)
 
-const contactNumber = document.querySelector("#contactnumber") as HTMLInputElement;
-const contactName = document.querySelector("#contact") as HTMLInputElement;
-const contactMail = document.querySelector("#contactmail") as HTMLInputElement;
+// get HTMLCollection turn into Element array and take value of input fields
 const contactButton = document.querySelector("#send") as HTMLButtonElement;
+const contactinput = document.getElementsByClassName("contact") as HTMLCollectionOf<Element>;
+const contactarray = Array.from(contactinput) as Element[];
+let contactvalues: string[];
 
-contactName?.addEventListener("keydown", (ev) => {
-  if(ev.key == "Enter"){
-    contactButton?.click();
-  }
+contactarray.forEach((input:HTMLInputElement) => {
+  input.addEventListener("keydown", (ev) => {
+    if(ev.key == "Enter"){     
+      contactButton?.click();
+    }
+  })
 })
 
-contactNumber?.addEventListener("keydown", (ev) => {
-  if(ev.key == "Enter"){
-    contactButton?.click();
-  }
-})
-
-contactMail?.addEventListener("keydown", (ev) => {
-  if(ev.key == "Enter"){
-    contactButton?.click();
-  }
-})
-
-
-// not sure how to make this update dynamic, changes in pdf, not in preview
-let contact:string;
-let contactnr:string;
-let contactmail:string;
-
+// add Eventlistner to all contact input fields
 contactButton?.addEventListener("click", () => {
-  contact = contactName.value.trim();
-  contactnr = contactNumber.value.trim();
-  contactmail = contactMail.value.trim();
-  contactName.value = "";
-  contactNumber.value = "";
-  contactMail.value = "";
+  contactvalues = contactarray.map((input: HTMLInputElement) => input.value.trim());
+  contactarray.forEach((input:HTMLInputElement) => {
+    input.value = "";
+  })
 })
+let i = 150 / 18;
+console.log(Math.ceil(i));
 
 //Packaging (packagingmax)
 //'3-Month Desk Calendar' => 560,
@@ -174,18 +159,21 @@ contactButton?.addEventListener("click", () => {
 
 //    calculate how many packages are needed and what the rest in the last package will be.
 //    this also calculates how many labels have to be printed for the specific order
-
-// i = orderamount / packagingmax
+// let iterations = orderamount / packaginmax;
+// let i = Math.ceil(iterations); 
 // while (i >= 1) {
-//  productsinp = packagingmax
+//  productsinp = packagingmax;
 //        in the last iteration we calculate how many products fit in the last package
 //  if (i == 1){
-//    productsinp = orderamount % packagingmax
-//    if (packageamount == 0) {
-//    productsinp = packagingmax
+//    if(iterations%1 == 0){
+//      productsinp = packagingmax;
 //    }
-//  i--
+//    else {
+//      productsinp = orderamount % packagingmax
+//    }
 //  }
+//  i--
+//
 //     add a split counter so we generate only a certain number of labels in one PDF
 //
 //  split++
@@ -194,7 +182,7 @@ contactButton?.addEventListener("click", () => {
 //  }
 //}
 //
-//    handle the rest of the split counter after all the iterations have finished and the counter hasent reached 32
+//   handle the rest of the split counter after all the iterations have finished and the counter hasnt reached 32
 //    
 //if (split != 0){
 //  genrate PDF with rest amount of split
