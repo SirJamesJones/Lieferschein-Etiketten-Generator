@@ -51,7 +51,7 @@ async function handleCSVupload(event) {
 uploadFile.addEventListener("change", handleCSVupload)
 renderPDFButton.addEventListener("click", renderPDF)
 
-function handleHeaderAssignmentChange(ev) {
+function handleHeaderAssignmentChange() {
   const newData = format_data(entries, get_header_assignments())
   render_deliverynote(context, newData[0], 0, 0)
 }
@@ -138,8 +138,14 @@ contactButton?.addEventListener("click", () => {
     input.value = "";
   })
 })
-let i = 150 / 18;
-console.log(Math.ceil(i));
+
+//trying to passHTML document to blob stream
+
+//do I need webpack for this and html-loader for this?
+
+//import htmlTemplate from "assets/deliverynote.html";
+//console.log(htmlTemplate);
+
 
 //Packaging (packagingmax)
 //'3-Month Desk Calendar' => 560,
@@ -176,7 +182,7 @@ console.log(Math.ceil(i));
 //
 //     add a split counter so we generate only a certain number of labels in one PDF
 //
-//  split++
+//  let split++;
 //  if (split == 32){
 //    generate PDF
 //  }
