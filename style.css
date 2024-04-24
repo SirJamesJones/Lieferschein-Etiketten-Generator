@@ -1,6 +1,48 @@
+
 iframe {
     border:1px solid black;
     display: block;
-    width: 600px;
-    height: 775px; 
+
+}
+#delPreview {
+    width: 190mm;
+    height: 230mm; 
+}
+
+#labelPreview {
+    width: 105mm;
+    height: 95mm; 
+}
+
+#container {
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10mm;
+    margin-top: 10mm;
+    margin-left: 10mm;
+    margin-right: 10mm;
+}
+
+#header {
+    display:flex;
+    justify-content: center;
+}
+
+#options {
+    display:flex;
+    flex-wrap: wrap;
+    gap: 25px 10px;
+}
+
+
+.print:hover {
+    box-shadow: rgba(132, 133, 132, 0.35) 0 -25px 18px -14px inset,rgba(132, 133, 132, 0.35) 0 1px 2px,rgba(132, 133, 132, 0.35) 0 2px 4px,rgba(132, 133, 132, 0.35) 0 4px 8px,rgba(132, 133, 132, 0.35) 0 8px 16px,rgba(132, 133, 132, 0.35) 0 16px 32px;
+    transform: scale(1.05) rotate(-1deg);
+}
+
+.input {
+    display:flex;
+    justify-content: center;
+    gap: 2mm;
 }

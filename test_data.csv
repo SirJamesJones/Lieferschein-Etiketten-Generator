@@ -1,3 +1,6 @@
-BestellNr., Bestell Menge, Firma, Vorname lieferaddresse, Nachname lieferaddresse, Straße lieferaddresse, PLZ, Stadt, Land
-4, 150, Test Co.KG, John, Doe, Teststr, 1337, Erkelenz, Deutschland
-2, 60, Demo AG, Max, Muster, Musterstr, a420, Heinsberg, Deutschland
+BestellNr., Produkt, Firma, Vorname lieferaddresse, Nachname lieferaddresse, Straße lieferaddresse, PLZ, Stadt, Bestell Menge, Land, lfdNR, Bestelldatum, Kostenstelle, Kunde
+4, Wandkalender, Test Co.KG, John, Doe, Teststr, 1337, Erkelenz, 150,Deutschland,  1, 01.01.1990, Kalendertliebe Print, Deine Mama
+4, 6-Monats-Kalender, Test Co.KG, John, Doe, Teststr, 1337, Erkelenz, 250, Deutschland, 1, 01.01.1990, Kalendertliebe Print, Deine Mama
+4, 4-Monats-Kalender, Test Co.KG, John, Doe, Teststr, 1337, Erkelenz, 250, Deutschland, 1, 01.01.1990, Kalendertliebe Print, Deine Mama
+2, 3-Monats-Kalender, Demo AG, Max, Muster, Musterstr, a420, Heinsberg, 60, Deutschland,  2, 11.07.1984, Kalenderliebe IT, Meine Mama
+2, 6-Monats-Kalender, Demo AG, Max, Muster, Musterstr, a420, Heinsberg, 300, Deutschland, 2, 11.07.1984, Kalenderliebe IT, Meine Mama

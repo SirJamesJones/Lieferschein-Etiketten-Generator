@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    /* https://developer.mozilla.org/en-US/docs/Web/CSS/@page */
+    body {
+      display: grid;
+      padding: 0;
+      margin: 0;
+    }
+
+    aside {
+      padding: 1rem
+    }
+
+    main {
+      --item-width: 90mm;
+      --item-height: 90mm;
+
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, var(--item-width, max-content));
+      grid-auto-rows: var(--item-height, auto);
+      gap: 2mm;
+      max-height: 100svh;
+      overflow-x: auto;
+    }
+
+    p {
+      display: block;
+      margin-block-start: 0em;
+      margin-block-end: 0em;
+      margin-inline-start: 0px;
+      margin-inline-end: 0px;
+      unicode-bidi: isolate;
+    }
+
+    h4 {
+      display: block;
+      margin-block-start: 0.3em;
+      margin-block-end: 0.3em;
+      margin-inline-start: 0px;
+      margin-inline-end: 0px;
+      font-weight: bold;
+      unicode-bidi: isolate;
+    }
+
+    @media print {
+      aside {
+        display: none;
+      }
+
+      main {
+        padding: 0;
+        /* display: block; */
+        max-height: unset;
+        overflow-x: visible;
+      }
+
+      article {
+        margin-top: 1rem;
+        display: block;
+        page-break-before: auto;
+      }
+
+      body {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    {{cells}}
+  </main>
+</body>
+
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        
+        /* WiP */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            display: grid;
+            grid-template-columns: min(300px, 100%) 1fr;
+            padding: 0;
+            margin: 0;
+        }
+
+        main {
+            --item-width: 95mm;
+            --item-height: 95mm;
+
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, var(--item-width, max-content));
+            grid-auto-rows: var(--item-height, auto);
+            gap: 2mm;
+            max-height: 100svh;
+            overflow-x: auto;
+        }
+
+
+        /* the old stuff */
+
+        p {
+            margin: 0px;
+            font-size: 0.98em;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .cell {
+            width: 95mm;
+            height: 95mm;
+            position: relative;
+            padding-top: 4mm;
+        }
+
+        .content {
+            float: left;
+            padding-top: 4mm;
+            padding-left: 4mm;
+            padding-right: 4mm;
+        }
+
+        .order-info {
+            /* width: 49%; */
+            width: 100%;
+            float: left;
+        }
+b
+        .order-details {
+            width: 51%;
+        }
+
+        .line {
+            margin: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="cell">
+            <div class="content">
+                <div class="line">
+                    <div class="order-info">
+                        <p class="bold">Bestellnummer:</p>
+                    </div>
+                    <div class="order-details">
+                        <p>{{Bestellnummer}}</p>
+                    </div>
+                </div>
+                <div class="line">
+                    <div class="order-info">
+                        <p class="bold">Besteller:</p>
+                    </div>
+                    <div class="order-details">
+                        <p>{{Besteller}}</p>
+                    </div>
+                </div>
+                <div class="line">
+                    <div class="order-info">
+                        <p class="bold">Firma:</p>
+                    </div>
+                    <div class="order-details">
+                        <p>{{Firma}}</p>
+                    </div>
+                </div>
+                <div class="line">
+                    <div class="order-info">
+                        <p class="bold">Produkt:</p>
+                    </div>
+                    <div class="order-details">
+                        <p>{{Produkt}}</p>
+                    </div>
+                </div>
+                <div class="line">
+                    <div class="order-info">
+                    <p class="bold">lfd. Nr.:</p>
+                    </div>
+                    <div class="order-details">
+                        <p>{{lfdNr}}</p>
+                    </div>
+                </div>
+                <div class="line">
+                    <div class="order-info">
+                        <p class="bold">Stückzahl im Karton:</p>
+                    </div>
+                    <div class="order-details">
+                        <p>{{Verpackungseinheit}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>

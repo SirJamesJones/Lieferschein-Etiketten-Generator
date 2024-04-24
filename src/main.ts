@@ -1,21 +1,41 @@
 import { parse } from "@vanillaes/csv"
-import canvas2pdf from 'canvas2pdf';
-import blobStream from "blob-stream";
 
-const EntryKeys = ["Bestellnummer","Firma", "Menge", "Vorname", "Nachname", "Straße", "PLZ", "Stadt", "Land" ] as const
+const EntryKeys = ["Bestellnummer", "Kundenname", "Kostenstelle", "Produkt", "Stückzahl", "lfdNr", "Bestelldatum", "Firma", "Vorname_Liefer", "Nachname_Liefer", "Straße_Liefer", "PLZ", "Stadt", "Land"] as const
 
 type EntryKeyUnion = typeof EntryKeys[number]
 
-type Entry = { [Key in (EntryKeyUnion)]: string }
+type Order = { [Key in (EntryKeyUnion)]: string }
 
 type HeaderAssignments = { [Key in (EntryKeyUnion)]: number }
 
-const previewElem = document.querySelector<HTMLCanvasElement>("#preview")
-const context = previewElem.getContext('2d')
-const pdfPreviewElem = document.querySelector<HTMLIFrameElement>("#pdfPreview")
+const PACKAGE_AMOUNTS = {
+  'Wandkalender': 28,
+  '3-Month Desk Calendar': 560,
+  '4-Month Wall Calendar': 50,
+  'Desktop Calendar': 30,
+  'Meeting Calendar': 18,
+  'Week Calendar Small': 14,
+  'Notebook': 26,
+  'Wall Project Planner': 1,
+  '3-Month Desk Calendar + bags': 560,
+  '4-Month Wall Calendar + bags': 50,
+  'Desktop Calendar + bags': 18,
+  'Meeting Calendar + bags': 18,
+  'Week Calendar Small + bags': 14,
+  'Notebook + bags': 26,
+  'Wall Project Planner + bags': 1
+} as const
+
+
+const delPreviewElem = document.querySelector<HTMLIFrameElement>("#delPreview")
+const labelPreviewElem = document.querySelector<HTMLIFrameElement>("#labelPreview")
 const form = document.querySelector("form")
 const uploadFile = document.querySelector<HTMLInputElement>("#upload")
-const renderPDFButton = document.querySelector("#renderPDF") as HTMLButtonElement;
+const deliveryPrintButton = document.querySelector("#deliveryprint") as HTMLButtonElement;
+const labelPrintButton = document.querySelector("#labelprint") as HTMLButtonElement;
+const contactNameInput = document.getElementById("contactname") as HTMLInputElement;
+const contactPhoneInput = document.getElementById("contactnumber") as HTMLInputElement;
+const contactMailInput = document.getElementById("contactmail") as HTMLInputElement;
 
 let entries: string[][]
 
@@ -26,7 +46,13 @@ async function handleCSVupload(event) {
   const parsed: Array<string[]> = parse(csvtext)
   const headers = parsed[0]
   entries = parsed.slice(1)
-  
+
+  // too make header appear after upload
+  const headerElement = document.getElementById("header");
+  if (headerElement) {
+    headerElement.style.display = "";
+  }
+
   const headerOptions = headers.map((header, idx) => `<option value="${idx}">${header}</option>`).join('\n')
 
   const formHtml = EntryKeys.map((header) => `
@@ -38,158 +64,115 @@ async function handleCSVupload(event) {
   </div>
   `).join('\n')
   form.innerHTML = formHtml
-  
   const selectElems = form.querySelectorAll("select")
-
   selectElems.forEach(elem => elem.addEventListener("change", handleHeaderAssignmentChange))
-  
-  const data = format_data(entries, get_header_assignments())
-  
-  render_deliverynote(context, data[0], 0, 0)
+
+  renderDeliveryNote();
+  renderLabel();
 }
 
 uploadFile.addEventListener("change", handleCSVupload)
-renderPDFButton.addEventListener("click", renderPDF)
+contactNameInput.addEventListener("change", renderDeliveryNote)
+contactPhoneInput.addEventListener("change", renderDeliveryNote)
+contactMailInput.addEventListener("change", renderDeliveryNote)
+deliveryPrintButton.addEventListener("click", () => delPreviewElem.contentWindow.print())
+labelPrintButton.addEventListener("click", () => labelPreviewElem.contentWindow.print())
 
 function handleHeaderAssignmentChange() {
-  const newData = format_data(entries, get_header_assignments())
-  render_deliverynote(context, newData[0], 0, 0)
+  renderDeliveryNote();
+  renderLabel();
 }
 
-function renderPDF() {
+async function renderDeliveryNote() {
   const newData = format_data(entries, get_header_assignments());
-  let stream = blobStream();
-  let ctx = new canvas2pdf.PdfContext(stream);
-  ctx.stream.on('finish', () => {
-    pdfPreviewElem.src = ctx.stream.toBlobURL('application/pdf');
-  });
-  render_page(ctx, newData);
-  ctx.end();
+  // @ts-expect-error ts doesn't know about groupBy yet. It exists tho, I swear
+  const groupedOrders: Record<string, Order[]> = Object.groupBy(newData, (item: Order) => item.Bestellnummer)
+
+
+  for (const orders of Object.values(groupedOrders)) {
+    const res = await fetch("assets/deliverynote.html");
+    const template = await res.text();
+
+    const rows = orders.map(o =>
+      '<tr class="c22"><td class="c14" colspan="1" rowspan="1"><ul class="c18 lst-kix_list_1-0 start"><li class="c1 c19"><span class="c2">{{Bezeichnung}}</span></li></ul></td><td class="c13" colspan="1" rowspan="1"><p class="c1"><span class="c2">&nbsp;&nbsp;&nbsp;{{Stueckzahl}}</span></p></td></tr>'
+        .replace("{{Bezeichnung}}", o.Produkt)
+        .replace("{{Stueckzahl}}", o.Stückzahl)
+    )
+
+    delPreviewElem.srcdoc = template
+      .replace("{{Ansprechpartner}}", contactNameInput.value)
+      .replace("{{Ansprechpartner Nummer}}", contactPhoneInput.value)
+      .replace("{{Ansprechpartner Email}}", contactMailInput.value)
+      .replace("{{Firmenname Lieferadresse}}", orders[0].Firma)
+      .replace("{{Vorname Lieferadresse}}", orders[0].Vorname_Liefer)
+      .replace("{{Nachname Lieferadresse}}", orders[0].Nachname_Liefer)
+      .replace("{{Strasse Lieferadresse}}", orders[0].Straße_Liefer)
+      .replace("{{PLZ Lieferadresse}}", orders[0].PLZ)
+      .replace("{{Stadt Lieferadresse}}", orders[0].Stadt)
+      .replace("{{Land Lieferadresse}}", orders[0].Land)
+      .replace("{{Bestellnummer}}", orders[0].Bestellnummer)
+      .replace("{{Kostenstelle}}", orders[0].Kostenstelle)
+      .replace("{{Bestelldatum}}", orders[0].Bestelldatum)
+      .replace("{{rows}}", rows.join("\n"))
+  }
 };
 
-function format_data(csv_entries: string[][], header_assignments: Partial<HeaderAssignments>): Entry[] {
+async function renderLabel() {
+  const newData = format_data(entries, get_header_assignments());
+  const gridContainerTemplate = await fetch("assets/grid.html").then(res => res.text());
+  const gridCellRes = await fetch("assets/gridCell.html").then(res => res.text());
+  const gridCellTemplate = (new DOMParser()).parseFromString(gridCellRes, "text/html").querySelector("template")
+  const cells: string[] = []
+  for (const label_data_entry of newData) {
+    const cell = (gridCellTemplate.content.cloneNode(true) as DocumentFragment).querySelector("article")
+    const packmax = PACKAGE_AMOUNTS[label_data_entry.Produkt]
+    const fullpack = Math.floor(+label_data_entry.Stückzahl / packmax)
+    const leftover = +label_data_entry.Stückzahl % packmax
+
+    // add packing calculation for labels
+    cell.querySelector("[data-field=packaging]").textContent = packmax;
+    cell.querySelector("[data-field=id]").textContent = label_data_entry.Bestellnummer
+    cell.querySelector("[data-field=customer]").textContent = label_data_entry.Kundenname
+    cell.querySelector("[data-field=company]").textContent = label_data_entry.Firma
+    cell.querySelector("[data-field=product]").textContent = label_data_entry.Produkt
+    cell.querySelector("[data-field=num]").textContent = label_data_entry.lfdNr
+    // for loop: push full pack cells 
+    // if leftover > 0: push extra cells with adjusted package amount
+    for (let i = 0; i < fullpack; i++) {
+      cells.push(cell.outerHTML)
+    }
+    if (leftover > 0) {
+      cell.querySelector("[data-field=packaging]").textContent = leftover.toString();
+      cells.push(cell.outerHTML);
+    }
+  }
+
+  const cellsHtml = cells.join('\n')
+
+  labelPreviewElem.srcdoc = gridContainerTemplate.replace("{{cells}}", cellsHtml)
+}
+
+
+function format_data(csv_entries: string[][], header_assignments: Partial<HeaderAssignments>): Order[] {
   return csv_entries.map((entry) => {
-    const formattedEntry: Entry = {} as Entry;
-    for (const key in header_assignments) {  
+    const formattedEntry: Order = {} as Order;
+    for (const key in header_assignments) {
       if (header_assignments.hasOwnProperty(key)) {
         //entry = row of CSV data | [header_assignments[key]] = column index
         //entry[header_assignments[key]] = retrive value from corrosponding column in CSV data
         //assign retrived value to key in formattedEntry object
-        formattedEntry[key] = entry[header_assignments[key]]; 
-      }                                                       
-    }                                                        
+        formattedEntry[key] = entry[header_assignments[key]].trim();
+      }
+    }
     return formattedEntry;
   });
 }
 
-function render_page(context: any, data: any[]) {
-  for (const [index, delivery_data_entry] of data.entries()) {
-    render_deliverynote(context, delivery_data_entry, 100 * (index % 2), 20 * (index - (index % 2)))
-  }
-}
-
-function render_deliverynote(ctx: CanvasRenderingContext2D, delivery_data: Entry, x: number, y: number) {
-  ctx.reset?.();
-  ctx.font = "10px Helvetica";
-  ctx.fillStyle = "#FF0000";
-  // iterate over each key in delivery_data obj. check if delivery_data properties are defined,
-  // render prop name(ie. Bestellnummer) followed by corrosponding value from deliver_data
-  for (const data in delivery_data) {
-    if (delivery_data.hasOwnProperty(data)) {
-      ctx.fillText(`${data}: ${delivery_data[data]}`, x, y + 15); //same as: ctx.fillText(`Bestellnummer: ${delivery_data.Bestellnummer}`, x, y + 15);
-      y += 30;
-    }
-  }
-  //for contact input fields render in frontend
-  ctx.fillText(`Ansprechpartner: ${contactvalues[0]}`, x , y + 15);
-  ctx.fillText(`Ansprechpartner Tel.: ${contactvalues[1]}`, x , y + 30);
-  ctx.fillText(`Ansprechpartner E-Mail: ${contactvalues[2]}`, x , y + 45);
-}
-
 function get_header_assignments() {
-  const headerassignments: Partial<HeaderAssignments> = {} 
+  const headerassignments: Partial<HeaderAssignments> = {}
   const selectElems = form.querySelectorAll("select")
   selectElems.forEach(selectelem => {
     headerassignments[selectelem.id] = +selectelem.value
   })
   return headerassignments
 }
-
-// Bad Code Area :^)
-
-// get HTMLCollection turn into Element array and take value of input fields
-const contactButton = document.querySelector("#send") as HTMLButtonElement;
-const contactinput = document.getElementsByClassName("contact") as HTMLCollectionOf<Element>;
-const contactarray = Array.from(contactinput) as Element[];
-let contactvalues: string[];
-
-contactarray.forEach((input:HTMLInputElement) => {
-  input.addEventListener("keydown", (ev) => {
-    if(ev.key == "Enter"){     
-      contactButton?.click();
-    }
-  })
-})
-
-// add Eventlistner to all contact input fields
-contactButton?.addEventListener("click", () => {
-  contactvalues = contactarray.map((input: HTMLInputElement) => input.value.trim());
-  contactarray.forEach((input:HTMLInputElement) => {
-    input.value = "";
-  })
-})
-
-//trying to passHTML document to blob stream
-
-//do I need webpack for this and html-loader for this?
-
-//import htmlTemplate from "assets/deliverynote.html";
-//console.log(htmlTemplate);
-
-
-//Packaging (packagingmax)
-//'3-Month Desk Calendar' => 560,
-//'4-Month Wall Calendar' => 50,
-//'Desktop Calendar' => 30,
-//'Meeting Calendar' => 18,
-//'Week Calendar Small' => 14,
-//'Notebook' => 26,
-//'Wall Project Planner' => 1,
-//'3-Month Desk Calendar + bags' => 560,
-//'4-Month Wall Calendar + bags' => 50,
-//'Desktop Calendar + bags' => 18,
-//'Meeting Calendar + bags' => 18,
-//'Week Calendar Small + bags' => 14,
-//'Notebook + bags' => 26,
-//'Wall Project Planner + bags' => 1
-
-//    calculate how many packages are needed and what the rest in the last package will be.
-//    this also calculates how many labels have to be printed for the specific order
-// let iterations = orderamount / packaginmax;
-// let i = Math.ceil(iterations); 
-// while (i >= 1) {
-//  productsinp = packagingmax;
-//        in the last iteration we calculate how many products fit in the last package
-//  if (i == 1){
-//    if(iterations%1 == 0){
-//      productsinp = packagingmax;
-//    }
-//    else {
-//      productsinp = orderamount % packagingmax
-//    }
-//  }
-//  i--
-//
-//     add a split counter so we generate only a certain number of labels in one PDF
-//
-//  let split++;
-//  if (split == 32){
-//    generate PDF
-//  }
-//}
-//
-//   handle the rest of the split counter after all the iterations have finished and the counter hasnt reached 32
-//    
-//if (split != 0){
-//  genrate PDF with rest amount of split
-//}
