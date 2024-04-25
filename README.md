@@ -23,8 +23,5 @@ Requirements
 - HTML labels Template [100x100]
 
 TODO
-- consider despatch bags
-- processoriantated documentation outline (mit Soll-Ist Zusatnd)
-- amortization calculation (moodle mercator Preismatrix, compared with a bought programm that does the same thing)  
+- despatch bags
 - Idiotenanleitung (SoP)
-- Lasten/Pflichtenheft
