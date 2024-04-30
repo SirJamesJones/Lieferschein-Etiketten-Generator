@@ -24,4 +24,5 @@ Requirements
 
 TODO
 - despatch bags
-- Idiotenanleitung (SoP)
+- print one deliverynote per customer number(one cutomer number can have 1 < ... orders, which need to be on one deliverynote)
+- print all the labels for the generated deliverynotes.
